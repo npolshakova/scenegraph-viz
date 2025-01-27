@@ -9,13 +9,62 @@ app.use(express.json());
 
 // Initialize with example data
 let nodes = [
-    { id: '1', x: 0, y: 0, z: 0, label: 'Root Node' },
-    { id: '2', x: -1, y: 1, z: 0, label: 'Node A' },
-    { id: '3', x: 1, y: 1, z: 0, label: 'Node B' },
-    { id: '4', x: -1, y: -1, z: 0, label: 'Node C' },
-    { id: '5', x: 1, y: -1, z: 0, label: 'Node D' },
-    { id: '6', x: 0, y: 2, z: 1, label: 'Node E' },
-    { id: '7', x: 0, y: -2, z: 1, label: 'Node F' }
+    {
+        id: '1',
+        label: 'Root Node',
+        position: { x: 0, y: 0, z: 0 }, // Coordinates stored in position
+        last_update_time_ns: Date.now() * 1e6, // Current time in nanoseconds
+        is_active: true, // Root node is active by default
+        is_predicted: false // Observed, not predicted
+    },
+    {
+        id: '2',
+        label: 'Node A',
+        position: { x: -1, y: 1, z: 0 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: false, // Example inactive node
+        is_predicted: true // Predicted node
+    },
+    {
+        id: '3',
+        label: 'Node B',
+        position: { x: 1, y: 1, z: 0 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: true,
+        is_predicted: false
+    },
+    {
+        id: '4',
+        label: 'Node C',
+        position: { x: -1, y: -1, z: 0 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: false,
+        is_predicted: false
+    },
+    {
+        id: '5',
+        label: 'Node D',
+        position: { x: 1, y: -1, z: 0 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: true,
+        is_predicted: false
+    },
+    {
+        id: '6',
+        label: 'Node E',
+        position: { x: 0, y: 2, z: 1 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: true,
+        is_predicted: true
+    },
+    {
+        id: '7',
+        label: 'Node F',
+        position: { x: 0, y: -2, z: 1 },
+        last_update_time_ns: Date.now() * 1e6,
+        is_active: false,
+        is_predicted: true
+    }
 ];
 
 let edges = [
@@ -31,12 +80,20 @@ let edges = [
 
 // Add node endpoint
 app.post('/api/nodes', (req, res) => {
-    const { x, y, z, label } = req.body;
+    const { position, label } = req.body;  // Destructure the new format with position
     const id = Date.now().toString();
-    const node = { id, x, y, z, label };
-    nodes.push(node);
-    res.json(node);
+    const node = {
+        id,
+        label,
+        position,  // Position now contains x, y, z as an object
+        last_update_time_ns: Date.now() * 1e6, // Set the current time in nanoseconds
+        is_active: true,  // Default to active
+        is_predicted: false  // Default to not predicted
+    };
+    nodes.push(node);  // Add the node to the nodes array
+    res.json(node);  // Respond with the newly added node
 });
+
 
 // Add edge endpoint
 app.post('/api/edges', (req, res) => {
@@ -71,6 +128,12 @@ app.delete('/api/edges/:id', (req, res) => {
     edges = edges.filter(edge => edge.id !== id);
     res.json({ success: true });
 });
+
+/*
+TODO:
+- Display metadata (semantic label, timestamp) -> turn on/off
+- Click -> display stays open to be able to copy
+*/
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
